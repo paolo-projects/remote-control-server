@@ -1,0 +1,27 @@
+{
+    "name": "remote-control-server",
+    "version": "1.0.0",
+    "repository":
+    {
+        "type": "git",
+        "url": "https://github.com/paolo-projects/remote-control-server"
+    },
+    "description": "A server made to remote-control an ESP8266 device through the local network",
+    "authors":
+    {
+        "name": "Paolo Infante",
+        "url": "https://www.paoloinfante.it"
+    },
+    "frameworks": ["arduino"],
+    "platforms": ["espressif8266"],
+    "examples": [
+        {
+            "name": "Simple",
+            "base": "examples/simple",
+            "files": [
+                "platformio.ini",
+                "src/main.cpp"
+            ]
+        }
+    ]
+}

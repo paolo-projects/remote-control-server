@@ -230,7 +230,7 @@ The device at this point stores the credential in the emulated EEPROM and attemp
 
             The connection timeout
 
-        -   \***\*int** WIFI_TIMEOUT_S\*\*
+        -   **_int_ WIFI_TIMEOUT_S**
 
             The timeout after which the device will stop trying to connecto to the wifi and switch to AP mode instead
 

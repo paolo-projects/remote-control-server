@@ -297,7 +297,7 @@ The device at this point stores the credential in the emulated EEPROM and attemp
         Gets a pointer to the value associated with the given key. It returns a pointer to the value, and `nullptr` when the given key has not been found. The map can also be accessed through the index operator:
 
         ```c++
-        String *value = map['key'];
+        String *value = map["key"];
         ```
 
     -   **_bool_ remove(const _T_ &key)**

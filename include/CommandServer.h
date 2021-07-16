@@ -14,6 +14,7 @@
 #include "Common.h"
 #include "Response.h"
 #include "RemoteControlSettings.h"
+#include "Logging.h"
 
 /**
  * @brief The main command-receiving server
@@ -47,8 +48,7 @@ public:
 
       if (client)
       {
-        Serial.print("Connection received from ");
-        Serial.println(client.remoteIP());
+        Log.println("Connection received from %s", client.remoteIP().toString().c_str());
 
         if (callbacks.onNewConnection.hasValue())
         {
@@ -57,7 +57,7 @@ public:
 
         if (authHandler.authenticate(client))
         {
-          Serial.println("Authentication OK");
+          Log.println("Authentication OK");
           ActionMap action = ActionMap::fromStream(client, settings.TIMEOUT_MS);
 
           if (actionParser.execute(action, client))
@@ -73,7 +73,7 @@ public:
         }
         else
         {
-          Serial.println("Authentication failed");
+          Log.println("Authentication failed");
         }
 
         if (callbacks.onConnectionClose.hasValue())

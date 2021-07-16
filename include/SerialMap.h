@@ -5,9 +5,9 @@
 #include <Arduino.h>
 #endif
 
-#include <sstream>
 #include "Map.h"
 #include "Serializable.h"
+#include "Logging.h"
 
 /**
  * @brief A serializable map based on the existing implementation with String support
@@ -32,7 +32,7 @@ public:
     static SerialMap fromStream(Stream &stream, int timeout)
     {
         int read = 0;
-        char buffer[512];
+        char buffer[BUFFER_SIZE];
 
         unsigned long start = millis();
 
@@ -41,15 +41,13 @@ public:
 
         while (stream.available() > 0)
         {
-            read += stream.readBytesUntil('\0', buffer + read, 1024 - read);
+            read += stream.readBytesUntil('\0', buffer + read, BUFFER_SIZE - read);
+            delay(10);
         }
 
-        Serial.print(" Read chars: ");
-        Serial.println(read);
+        Log.printfln("Read chars: %d", read);
 
-        SerialMap result(buffer, read);
-
-        return result;
+        return SerialMap(buffer, read);
     }
     /**
      * @brief Construct a new Serial Map object from the raw data
@@ -59,42 +57,52 @@ public:
      */
     SerialMap(const char *buffer, size_t len)
     {
-        std::stringstream sst;
-        sst.write(buffer, len);
+        //std::stringstream sst;
+        //sst.write(buffer, len);
         char buf[257] = {};
 
-        while (!sst.eof())
+        size_t cursor = 0;
+
+        while ((cursor + 2) < len)
         {
-            if (!sst.good() || sst.get() != KEY_TYPE)
+            if (buffer[cursor++] != KEY_TYPE)
             {
                 break;
             }
 
-            unsigned char length = sst.get();
-            sst.read(buf, length);
+            unsigned char length = buffer[cursor++];
+
+            if (cursor + length + 2 > len)
+            {
+                break;
+            }
+
+            //sst.read(buf, length);
+            memcpy(buf, buffer + cursor, length);
             buf[length] = 0;
             T key(buf);
+            cursor += length;
 
-            if (!sst.good() || sst.get() != VALUE_TYPE)
+            if (buffer[cursor++] != VALUE_TYPE)
             {
                 break;
             }
 
-            length = sst.get();
-            sst.read(buf, length);
+            length = buffer[cursor++];
+
+            if (cursor + length > len)
+            {
+                break;
+            }
+
+            //sst.read(buf, length);
+            memcpy(buf, buffer + cursor, length);
             buf[length] = 0;
             T value(buf);
+            cursor += length;
 
             Map<T, T, S>::put(key, value);
         }
-
-        Serial.print("Keys: [ ");
-        for (int i = 0; i < Map<T, T, S>::size; i++)
-        {
-            Serial.print(Map<T, T, S>::keys[i]);
-            Serial.print(", ");
-        }
-        Serial.println(" ]");
     }
 
     /**
@@ -117,26 +125,28 @@ public:
             return -1;
         }
 
-        std::stringstream sst;
+        size_t written = 0;
+
         for (int i = 0; i < Map<T, T, S>::size; i++)
         {
             const T &key = Map<T, T, S>::keys[i];
             const T &value = Map<T, T, S>::values[i];
 
-            sst.put(KEY_TYPE);
-            sst.put(key.length());
-            sst << key.c_str();
+            data[written++] = KEY_TYPE;
+            data[written++] = (unsigned char)key.length();
 
-            sst.put(VALUE_TYPE);
-            sst.put(value.length());
-            sst << value.c_str();
+            memcpy(data + written, key.c_str(), key.length());
+            written += key.length();
+
+            data[written++] = VALUE_TYPE;
+            data[written++] = (unsigned char)value.length();
+            memcpy(data + written, value.c_str(), value.length());
+            written += value.length();
         }
 
-        sst << '\0';
+        data[written++] = '\0';
 
-        sst.read(data, expectedSize);
-
-        return expectedSize;
+        return written;
     }
 
     /**
@@ -158,10 +168,23 @@ public:
         stream.write('\0');
     }
 
+    void print(Stream &stream)
+    {
+        stream.print("[ \"");
+        for (int i = 0; i < Map<T, T, S>::size; i++)
+        {
+            stream.print(Map<T, T, S>::keys[i].c_str());
+            stream.print("\" => \"");
+            stream.print(Map<T, T, S>::values[i].c_str());
+            stream.print("\", ");
+        }
+        stream.println(" ]");
+    }
+
 private:
     static constexpr char KEY_TYPE = 0x10;
     static constexpr char VALUE_TYPE = 0x11;
-    static constexpr int BUFFER_LIMIT = 1024 * 10; //10kB
+    static constexpr int BUFFER_SIZE = 512; //10kB
 };
 
 #endif

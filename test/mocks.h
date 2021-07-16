@@ -8,6 +8,8 @@
 #include <cstring>
 #include <iterator>
 
+typedef std::string String;
+
 // Mock for Stream
 class Stream
 {
@@ -17,11 +19,15 @@ public:
     virtual size_t write(const char *str) { return 0; }
     virtual size_t write(char c) { return 0; }
     virtual size_t readBytesUntil(char c, char *b, size_t d) { return 0; }
+    virtual size_t print(const char *str) { return 0; }
+    virtual size_t println(const char *str) { return 0; }
 };
 
 class IoStreamProxy : public Stream
 {
 public:
+    IoStreamProxy() = delete;
+    IoStreamProxy(const IoStreamProxy &) = delete;
     IoStreamProxy(std::basic_iostream<char> &stream) : stream(stream) {}
     int available() override { return stream.good() ? 1 : -1; }
     size_t write(char *data, size_t sz) override
@@ -54,9 +60,33 @@ public:
         }
         return index; // return number of characters, not including null terminator }
     }
+    size_t print(const char *str) override { return 0; }
+    size_t println(const char *str) override { return 0; }
 
 private:
     std::basic_iostream<char> &stream;
+};
+
+class OStreamProxy : public Stream
+{
+public:
+    OStreamProxy() = delete;
+    OStreamProxy(const OStreamProxy &) = delete;
+    OStreamProxy(std::ostream &stream) : stream(stream) {}
+    int available() override { return stream.good() ? 1 : -1; }
+    size_t print(const char *str) override
+    {
+        stream << str;
+        return 0;
+    }
+    size_t println(const char *str) override
+    {
+        stream << str << "\n";
+        return 0;
+    }
+
+private:
+    std::ostream &stream;
 };
 
 #ifdef PRINT_SERIAL

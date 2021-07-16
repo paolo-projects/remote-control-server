@@ -8,6 +8,7 @@
 #include "CommandServer.h"
 #include "Configuration.h"
 #include "StateManager.h"
+#include "Logging.h"
 
 typedef std::function<bool(ActionMap &, Stream &)> ActionCallback;
 
@@ -90,14 +91,14 @@ private:
         WiFi.mode(WIFI_STA);
         WiFi.hostname(settings.COMMAND_SERVER_SETTINGS.WIFI_HOSTNAME);
         WiFi.begin(configuration.getBSSID(), configuration.getPass());
-        Serial.println("Connecting...");
+        Log.println("Connecting...");
         uint16_t timeout = settings.COMMAND_SERVER_SETTINGS.TIMEOUT_MS;
         while (WiFi.status() != WL_CONNECTED)
         {
             if (timeout <= 0)
             {
-                Serial.println("");
-                Serial.println("Connection Timeout!");
+                Log.println("");
+                Log.println("Connection Timeout!");
                 return false;
             }
             // Divide 1s delay in 10 iterations of 100ms to allow manual overriding through button
@@ -106,25 +107,22 @@ private:
                 delay(100);
             }
             timeout--;
-            Serial.print(".");
+            Log.print(".");
         }
-        Serial.println("");
-        Serial.print("Successfully connected to: ");
-        Serial.print(configuration.getBSSID());
-        Serial.print(", with IP: ");
-        Serial.println(WiFi.localIP());
+        Log.println("");
+        Log.printfln("Successfully connected to: %s, with IP: %s", configuration.getBSSID().c_str(), WiFi.localIP().toString().c_str());
         return true;
     }
 
     bool startAccessPoint()
     {
         WiFi.mode(WIFI_AP);
-        Serial.println("Starting AP mode...");
+        Log.println("Starting AP mode...");
         bool result = WiFi.softAPConfig(settings.ACCESS_POINT_SETTINGS.WIFI_AP_IP_ADDRESS,
                                         settings.ACCESS_POINT_SETTINGS.WIFI_AP_IP_GATEWAY, settings.ACCESS_POINT_SETTINGS.WIFI_AP_SUBNET);
         if (!result)
         {
-            Serial.println("Error setting AP configuration");
+            Log.println("Error setting AP configuration");
             return false;
         }
         result = WiFi.softAP(settings.ACCESS_POINT_SETTINGS.WIFI_AP_SSID, settings.ACCESS_POINT_SETTINGS.WIFI_AP_PASS,
@@ -132,13 +130,10 @@ private:
                              settings.ACCESS_POINT_SETTINGS.WIFI_AP_MAX_CONN);
         if (!result)
         {
-            Serial.println("Error starting soft AP mode");
+            Log.println("Error starting soft AP mode");
             return false;
         }
-        Serial.print("Soft AP started with SSID: ");
-        Serial.print(settings.ACCESS_POINT_SETTINGS.WIFI_AP_SSID);
-        Serial.print(" and local IP: ");
-        Serial.println(WiFi.softAPIP());
+        Log.printfln("Soft AP started with SSID: %s and local IP: %s", settings.ACCESS_POINT_SETTINGS.WIFI_AP_SSID, WiFi.softAPIP().toString().c_str());
         return true;
     }
 

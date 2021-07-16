@@ -4,9 +4,9 @@ A remote control library for the ESP8266. This library has the purpose of lettin
 
 # Dependencies
 
-The library is build upon a mix of the Arduino library for timeout functions (using the `delay` function) and for strings (using the `String` type), the ESP library for Socket I/O and the C++ standard library for the functional types.
+The library is build upon a mix of the Arduino library, the ESP library for Socket I/O and the C++ standard library.
 
-The requirements thus are the Arduino framework, the proper ESP8266 library for your device and a compiler supporting C++11.
+The requirements thus are the Arduino framework, the ESP8266 library and support for the C++ standard library up to C++11.
 
 # Features
 
@@ -121,11 +121,11 @@ The device at this point stores the credential in the emulated EEPROM and attemp
 
     -   **_AccessPointSettings_ ACCESS_POINT_SETTINGS**
 
-        -   **_String_ WIFI_AP_SSID**
+        -   **_char \*_ WIFI_AP_SSID**
 
             The name of the Access-Point WiFi network
 
-        -   **_String_ WIFI_AP_PASS**
+        -   **_char \*_ WIFI_AP_PASS**
 
             The password of the Access-Point WiFi network
 
@@ -153,11 +153,11 @@ The device at this point stores the credential in the emulated EEPROM and attemp
 
             The subnet mask of the local network in AP mode
 
-        -   **_String_ AUTH_USER**
+        -   **_char \*_ AUTH_USER**
 
             The authentication username
 
-        -   **_String_ AUTH_PASS**
+        -   **_char \*_ AUTH_PASS**
 
             The authentication password
 
@@ -179,7 +179,7 @@ The device at this point stores the credential in the emulated EEPROM and attemp
 
     -   **_CommandServerSettings_ COMMAND_SERVER_SETTINGS**
 
-        -   **_String_ HOSTNAME;**
+        -   **_char \*_ HOSTNAME;**
 
             The hostname of the server in the Local Network
 
@@ -187,11 +187,11 @@ The device at this point stores the credential in the emulated EEPROM and attemp
 
             The server port
 
-        -   **_String_ AUTH_USERNAME;**
+        -   **_char \*_ AUTH_USERNAME;**
 
             The username for the authentication
 
-        -   **_String_ AUTH_PASSWORD;**
+        -   **_char \*_ AUTH_PASSWORD;**
 
             The password for the authentication
 

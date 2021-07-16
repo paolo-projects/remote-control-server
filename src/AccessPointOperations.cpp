@@ -23,8 +23,7 @@ void AccessPointOperations::startServer()
         BearSSL::WiFiClientSecure incoming = server.available();
         if (incoming)
         {
-            Serial.print("Connection received from ");
-            Serial.println(incoming.remoteIP());
+            Log.printfln("Connection received from %s", incoming.remoteIP().toString().c_str());
 
             int timeout = millis();
             while (!incoming.available() && millis() - timeout < settings.TIMEOUT_MS)
@@ -49,10 +48,10 @@ void AccessPointOperations::startServer()
                 }
                 else
                 {
-                    Serial.println("Bad authentication");
+                    Log.println("Bad authentication");
                 }
 
-                Serial.println("Closing connection");
+                Log.println("Closing connection");
                 incoming.stop();
             }
         }

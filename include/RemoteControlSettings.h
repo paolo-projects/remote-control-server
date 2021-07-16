@@ -2,15 +2,13 @@
 #define REMOTECONTROLSETTINGS_H
 
 #include <ESP8266WiFi.h>
-#include "AccessPointOperations.h"
-#include "CommandServer.h"
 
 struct AccessPointSettings
 {
     /** @brief The name of the Access-Point WiFi network */
-    String WIFI_AP_SSID;
+    char *WIFI_AP_SSID;
     /** @brief The password of the Access-Point WiFi network */
-    String WIFI_AP_PASS;
+    char *WIFI_AP_PASS;
     /** @brief Whether the Access Point shall be hidden */
     bool WIFI_AP_HIDDEN;
     /** @brief The channel of the WiFi Access Point */
@@ -24,9 +22,9 @@ struct AccessPointSettings
     /** @brief The subnet mask of the local network in AP mode */
     IPAddress WIFI_AP_SUBNET;
     /** @brief The authentication username */
-    String AUTH_USER;
+    char *AUTH_USER;
     /** @brief The authentication password */
-    String AUTH_PASS;
+    char *AUTH_PASS;
     /** @brief The server port */
     int PORT;
     /** @brief The connection timeout */
@@ -40,13 +38,13 @@ struct AccessPointSettings
 struct CommandServerSettings
 {
     /** @brief The hostname of the server in the Local Network */
-    String HOSTNAME;
+    char *HOSTNAME;
     /** @brief The server port */
     int PORT;
     /** @brief The username for the authentication */
-    String AUTH_USERNAME;
+    char *AUTH_USERNAME;
     /** @brief The password for the authentication */
-    String AUTH_PASSWORD;
+    char *AUTH_PASSWORD;
     /** @brief The UDP broadcast port */
     int UDP_PORT;
     /** @brief The UDP packet to transmit */

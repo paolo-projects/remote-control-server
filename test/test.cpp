@@ -1,5 +1,6 @@
 #define _TEST_ENV
 
+#include "mocks.h"
 #include <unity.h>
 #include <string>
 #include <functional>
@@ -7,7 +8,6 @@
 #include <random>
 #include <sstream>
 #include "Optional.h"
-#include "mocks.h"
 #include "Map.h"
 #include "SerialMap.h"
 
@@ -132,6 +132,9 @@ void test_Serialization_deserialization()
     char data[] = {0x10, 4, 'w', 'i', 'l', 'l', 0x11, 2, 'i', 't', 0x10, 5, 't', 'r', 'u', 'l', 'y', 0x11, 5, 'w', 'o', 'r', 'k', '?', 0x00};
 
     SerialMap<std::string, 10> parsed(data, sizeof(data));
+
+    OStreamProxy scout(std::cout);
+    parsed.print(scout);
 
     TEST_ASSERT(parsed.has("will"));
     TEST_ASSERT(parsed.has("truly"));

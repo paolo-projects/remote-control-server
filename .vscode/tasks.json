@@ -9,7 +9,7 @@
             "command": "pio test --environment native",
             "problemMatcher": {
                 "pattern": {
-                    "regexp": "^(.+?):(\\d+):(.+?):(FAIL): (.+)$",
+                    "regexp": "^(.+?):(\\d+):(.+?):(.+?): (.+)$",
                     "file": 1,
                     "line": 2,
                     "severity": 4,

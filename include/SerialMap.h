@@ -45,7 +45,7 @@ public:
             delay(10);
         }
 
-        Log.printfln("Read chars: %d", read);
+        Log::printfln("Read chars: %d", read);
 
         return SerialMap(buffer, read);
     }

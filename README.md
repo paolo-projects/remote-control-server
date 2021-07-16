@@ -115,6 +115,13 @@ The device at this point stores the credential in the emulated EEPROM and attemp
 
         This method sets the given callback to be executed when the main server is terminated (e.g. after the action callback returns `true`)
 
+    -   **_void_ setLoopCallback(_std::function<void(void)>_ callback)**
+
+        This one sets the given callback to be executed while the server is: busy awaiting for a WiFi connection, in the AP server awaiting for
+        client connections and in the main server awaiting for client connections.
+        The callback is useful to do other stuff while the code execution is not in control of the `loop()` function, sort of emulating it but
+        with a slower execution rate.
+
 -   ## RemoteControlSettings
 
     This class stores the settings needed to initialize the server. It's composed of two more objects, one for the Access-Point-related configuration, and one for the main server configuration.
@@ -179,49 +186,53 @@ The device at this point stores the credential in the emulated EEPROM and attemp
 
     -   **_CommandServerSettings_ COMMAND_SERVER_SETTINGS**
 
-        -   **_char \*_ HOSTNAME;**
+        -   **_char \*_ HOSTNAME**
 
             The hostname of the server in the Local Network
 
-        -   **_int_ PORT;**
+        -   **_int_ PORT**
 
             The server port
 
-        -   **_char \*_ AUTH_USERNAME;**
+        -   **_char \*_ AUTH_USERNAME**
 
             The username for the authentication
 
-        -   **_char \*_ AUTH_PASSWORD;**
+        -   **_char \*_ AUTH_PASSWORD**
 
             The password for the authentication
 
-        -   **_int_ UDP_PORT;**
+        -   **_int_ UDP_PORT**
 
             The UDP broadcast port
 
-        -   **_char_ \*UDP_PACKET;**
+        -   **_char_ \*UDP_PACKET**
 
             The UDP packet to transmit
 
-        -   **_size_t_ UDP_PACKET_SIZE;**
+        -   **_size_t_ UDP_PACKET_SIZE**
 
             The UDP packet size
 
-        -   **_int_ UDP_RATE_MS;**
+        -   **_int_ UDP_RATE_MS**
 
             The rate at which to transmit the UDP packet
 
-        -   **_char_ \*CERTIFICATE;**
+        -   **_char_ \*CERTIFICATE**
 
             The server certificate in PEM format
 
-        -   **_char_ \*PRIVATE_KEY;**
+        -   **_char_ \*PRIVATE_KEY**
 
             The server private key in PEM format
 
-        -   **_int_ TIMEOUT_MS;**
+        -   **_int_ TIMEOUT_MS**
 
             The connection timeout
+
+        -   \***\*int** WIFI_TIMEOUT_S\*\*
+
+            The timeout after which the device will stop trying to connecto to the wifi and switch to AP mode instead
 
     ```c++
     RemoteControlSettings settings;

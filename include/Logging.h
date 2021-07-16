@@ -10,7 +10,7 @@
 class Logger
 {
 public:
-        size_t printf(const char *format, ...)
+        static size_t printf(const char *format, ...)
         {
 #ifdef _SERIAL_LOG_VERBOSE
                 char buffer[512];
@@ -26,7 +26,7 @@ public:
 #endif
         }
 
-        size_t printfln(const char *format, ...)
+        static size_t printfln(const char *format, ...)
         {
 #ifdef _SERIAL_LOG_VERBOSE
                 char buffer[512];
@@ -43,7 +43,7 @@ public:
 #endif
         }
 
-        size_t println(const char *str)
+        static size_t println(const char *str)
         {
 #ifdef _SERIAL_LOG_VERBOSE
                 return Serial.println(str);
@@ -52,7 +52,7 @@ public:
 #endif
         }
 
-        size_t println(const String &str)
+        static size_t println(const String &str)
         {
 #ifdef _SERIAL_LOG_VERBOSE
                 return Serial.println(str);
@@ -61,7 +61,7 @@ public:
 #endif
         }
 
-        size_t print(const char *str)
+        static size_t print(const char *str)
         {
 #ifdef _SERIAL_LOG_VERBOSE
                 return Serial.print(str);
@@ -70,7 +70,7 @@ public:
 #endif
         }
 
-        size_t print(const String &str)
+        static size_t print(const String &str)
         {
 #ifdef _SERIAL_LOG_VERBOSE
                 return Serial.print(str);
@@ -79,7 +79,7 @@ public:
 #endif
         }
 
-        size_t print(int n)
+        static size_t print(int n)
         {
 #ifdef _SERIAL_LOG_VERBOSE
                 return Serial.print(n);
@@ -89,6 +89,6 @@ public:
         }
 };
 
-Logger Log;
+using Log = Logger;
 
 #endif // LOGGING_H

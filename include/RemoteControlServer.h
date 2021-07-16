@@ -8,6 +8,7 @@
 #include "CommandServer.h"
 #include "Configuration.h"
 #include "StateManager.h"
+#include "Optional.h"
 #include "Logging.h"
 
 typedef std::function<bool(ActionMap &, Stream &)> ActionCallback;
@@ -24,12 +25,12 @@ public:
     RemoteControlServer() = delete;
     RemoteControlServer(const RemoteControlServer &c) = delete;
     RemoteControlServer(const RemoteControlServer &&m) = delete;
-    RemoteControlServer(RemoteControlSettings settings) : settings(settings), apOps(configuration, stateManager, settings.ACCESS_POINT_SETTINGS),
+    RemoteControlServer(RemoteControlSettings settings) : settings(settings), accessPoint(configuration, stateManager, settings.ACCESS_POINT_SETTINGS),
                                                           commandServer(stateManager, settings.COMMAND_SERVER_SETTINGS)
     {
-        stateManager.registerStateFunction(CONNECTING, std::bind(this, &RemoteControlServer::connectingCallback));
-        stateManager.registerStateFunction(CONNECTED, std::bind(this, &RemoteControlServer::connectedCallback));
-        stateManager.registerStateFunction(AP_MODE, std::bind(this, &RemoteControlServer::apModeCallback));
+        stateManager.registerStateFunction(CONNECTING, std::bind(&RemoteControlServer::connectingCallback, this));
+        stateManager.registerStateFunction(CONNECTED, std::bind(&RemoteControlServer::connectedCallback, this));
+        stateManager.registerStateFunction(AP_MODE, std::bind(&RemoteControlServer::apModeCallback, this));
     }
     /**
      * @brief Set a callback to be executed when a new connection is accepted from the main server (not the AP one)
@@ -50,7 +51,21 @@ public:
         commandServer.setOnConnectionCloseCallback(callback);
     }
     /**
-     * @brief et a callback to be executed when the main server is terminated
+   * @brief Set a callback to be executed in loop while the device is busy
+   *    connecting to a WiFi or in the AP and Main servers awaiting for connections.
+   *    This is useful to emulate the `loop()` function while the server has taken
+   *    control of code execution
+   * 
+   * @param callback The callback
+   */
+    void setLoopCallback(std::function<void(void)> callback)
+    {
+        wifiConnectingCallback = callback;
+        commandServer.setOnServerLoopCallback(callback);
+        accessPoint.setOnServerLoopCallback(callback);
+    }
+    /**
+     * @brief Set a callback to be executed when the main server is terminated
      * 
      * @param callback The callback
      */
@@ -82,47 +97,52 @@ private:
     Configuration configuration;
     StateManager stateManager;
     RemoteControlSettings settings;
-    AccessPointOperations apOps;
+    AccessPointOperations accessPoint;
     CommandServer<N> commandServer;
     unsigned long lastButtonPress = millis();
+    Optional<std::function<void(void)>> wifiConnectingCallback;
 
     bool connectToWlan()
     {
         WiFi.mode(WIFI_STA);
-        WiFi.hostname(settings.COMMAND_SERVER_SETTINGS.WIFI_HOSTNAME);
+        WiFi.hostname(settings.COMMAND_SERVER_SETTINGS.HOSTNAME);
         WiFi.begin(configuration.getBSSID(), configuration.getPass());
-        Log.println("Connecting...");
-        uint16_t timeout = settings.COMMAND_SERVER_SETTINGS.TIMEOUT_MS;
+        Log::println("Connecting...");
+        uint16_t timeout = settings.COMMAND_SERVER_SETTINGS.WIFI_TIMEOUT_S;
         while (WiFi.status() != WL_CONNECTED)
         {
             if (timeout <= 0)
             {
-                Log.println("");
-                Log.println("Connection Timeout!");
+                Log::println("");
+                Log::println("Connection Timeout!");
                 return false;
             }
             // Divide 1s delay in 10 iterations of 100ms to allow manual overriding through button
             for (uint8_t i = 0; i < 10; i++)
             {
+                if (wifiConnectingCallback.hasValue())
+                {
+                    wifiConnectingCallback.get()();
+                }
                 delay(100);
             }
             timeout--;
-            Log.print(".");
+            Log::print(".");
         }
-        Log.println("");
-        Log.printfln("Successfully connected to: %s, with IP: %s", configuration.getBSSID().c_str(), WiFi.localIP().toString().c_str());
+        Log::println("");
+        Log::printfln("Successfully connected to: %s, with IP: %s", configuration.getBSSID().c_str(), WiFi.localIP().toString().c_str());
         return true;
     }
 
     bool startAccessPoint()
     {
         WiFi.mode(WIFI_AP);
-        Log.println("Starting AP mode...");
+        Log::println("Starting AP mode...");
         bool result = WiFi.softAPConfig(settings.ACCESS_POINT_SETTINGS.WIFI_AP_IP_ADDRESS,
                                         settings.ACCESS_POINT_SETTINGS.WIFI_AP_IP_GATEWAY, settings.ACCESS_POINT_SETTINGS.WIFI_AP_SUBNET);
         if (!result)
         {
-            Log.println("Error setting AP configuration");
+            Log::println("Error setting AP configuration");
             return false;
         }
         result = WiFi.softAP(settings.ACCESS_POINT_SETTINGS.WIFI_AP_SSID, settings.ACCESS_POINT_SETTINGS.WIFI_AP_PASS,
@@ -130,10 +150,10 @@ private:
                              settings.ACCESS_POINT_SETTINGS.WIFI_AP_MAX_CONN);
         if (!result)
         {
-            Log.println("Error starting soft AP mode");
+            Log::println("Error starting soft AP mode");
             return false;
         }
-        Log.printfln("Soft AP started with SSID: %s and local IP: %s", settings.ACCESS_POINT_SETTINGS.WIFI_AP_SSID, WiFi.softAPIP().toString().c_str());
+        Log::printfln("Soft AP started with SSID: %s and local IP: %s", settings.ACCESS_POINT_SETTINGS.WIFI_AP_SSID, WiFi.softAPIP().toString().c_str());
         return true;
     }
 

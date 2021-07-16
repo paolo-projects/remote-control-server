@@ -10,6 +10,11 @@ AccessPointOperations::AccessPointOperations(
     actionParser.with("setwifi", CALLBACK(AccessPointOperations, setWifiPassword));
 }
 
+void AccessPointOperations::setOnServerLoopCallback(std::function<void(void)> callback)
+{
+    onServerLoopCallback = callback;
+}
+
 void AccessPointOperations::startServer()
 {
     BearSSL::WiFiServerSecure server(settings.PORT);
@@ -23,7 +28,7 @@ void AccessPointOperations::startServer()
         BearSSL::WiFiClientSecure incoming = server.available();
         if (incoming)
         {
-            Log.printfln("Connection received from %s", incoming.remoteIP().toString().c_str());
+            Log::printfln("Connection received from %s", incoming.remoteIP().toString().c_str());
 
             int timeout = millis();
             while (!incoming.available() && millis() - timeout < settings.TIMEOUT_MS)
@@ -48,12 +53,16 @@ void AccessPointOperations::startServer()
                 }
                 else
                 {
-                    Log.println("Bad authentication");
+                    Log::println("Bad authentication");
                 }
 
-                Log.println("Closing connection");
+                Log::println("Closing connection");
                 incoming.stop();
             }
+        }
+        if (onServerLoopCallback.hasValue())
+        {
+            onServerLoopCallback.get()();
         }
         delay(20);
     }

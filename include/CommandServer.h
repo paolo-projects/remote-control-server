@@ -48,7 +48,7 @@ public:
 
       if (client)
       {
-        Log.println("Connection received from %s", client.remoteIP().toString().c_str());
+        Log::printfln("Connection received from %s", client.remoteIP().toString().c_str());
 
         if (callbacks.onNewConnection.hasValue())
         {
@@ -57,7 +57,7 @@ public:
 
         if (authHandler.authenticate(client))
         {
-          Log.println("Authentication OK");
+          Log::println("Authentication OK");
           ActionMap action = ActionMap::fromStream(client, settings.TIMEOUT_MS);
 
           if (actionParser.execute(action, client))
@@ -73,7 +73,7 @@ public:
         }
         else
         {
-          Log.println("Authentication failed");
+          Log::println("Authentication failed");
         }
 
         if (callbacks.onConnectionClose.hasValue())
@@ -82,6 +82,11 @@ public:
         }
 
         client.stop();
+      }
+
+      if (callbacks.onServerLoop.hasValue())
+      {
+        callbacks.onServerLoop.get()();
       }
       udpBroadcast();
       delay(20);
@@ -119,6 +124,16 @@ public:
     callbacks.onConnectionClose = callback;
   }
   /**
+   * @brief Set a callback to be executed at every server cycle loop. This is useful to do extra
+   *  stuff as if it was executed in the `loop()` function
+   * 
+   * @param callback The callback
+   */
+  void setOnServerLoopCallback(std::function<void(void)> callback)
+  {
+    callbacks.onServerLoop = callback;
+  }
+  /**
    * @brief Set a callback to be executed when the server is terminated
    * 
    * @param callback The callback
@@ -133,6 +148,7 @@ private:
   {
     Optional<std::function<void(const String &, int)>> onNewConnection;
     Optional<std::function<void(void)>> onConnectionClose;
+    Optional<std::function<void(void)>> onServerLoop;
     Optional<std::function<void(void)>> onServerTermination;
   };
 
